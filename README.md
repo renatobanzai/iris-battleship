@@ -5,7 +5,12 @@ Why not a game in contest?
 
 Battleship is a guessing game for 2 players.
 
-![picture](https://raw.githubusercontent.com/renatobanzai/iris-battleship/master/img/battleship_game.jpg)
+![picture](https://raw.githubusercontent.com/renatobanzai/iris-battleship/main/img/battleship_game.jpg)
 
+## Rules
+
+## Architecture 
+
+## Next Steps
 
 
