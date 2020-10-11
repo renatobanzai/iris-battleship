@@ -70,11 +70,12 @@ def xplode():
     player = request.args.get('player')
     target = request.args.get('target')
 
-    ships = obj_irisdomestic.get(game_id, opponent[player], "ships")
-    if ships.find(target) > -1:
-        result = "hit"
-    else:
-        result = "miss"
+    ships = obj_irisdomestic.get(game_id, opponent[player], "ships").split(",")
+    result = "miss"
+
+    for x in ships:
+        if x == target:
+            result = "hit"
 
     obj_irisdomestic.set(player, game_id, "lastplayer")
     obj_irisdomestic.set(target, game_id, player, "lasttarget")
