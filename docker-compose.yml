@@ -21,7 +21,9 @@ services:
     links:
       - iris-database
     ports:
-      - 80:80
+      - 80:5000
+    volumes:
+      - ./data:/data
     environment:
       WAIT_HOSTS: iris-database:51773
     command: __main__.py
