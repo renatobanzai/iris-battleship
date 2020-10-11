@@ -37,10 +37,44 @@ def arrangep2():
 @app.route('/save/')
 def save():
     game_id = request.args.get('game_id')
-    player_id = request.args.get('player')
+    player = request.args.get('player')
     ships = request.args.get('ships')
-    obj_irisdomestic.set(ships, game_id, player_id, "ships")
-    return render_template('game.html')
+    obj_irisdomestic.set(ships, game_id, player, "ships")
+    return render_template('game.html', game_id=game_id, player=player)
+
+@app.route('/caniplay/')
+def CanIPlay():
+    result = "0"
+    game_id = request.args.get('game_id')
+    player_id = request.args.get('player')
+    if(obj_irisdomestic.isDefined(game_id, "lastplayer")==False
+            and obj_irisdomestic.isDefined(game_id, "p1", "ships")
+            and obj_irisdomestic.isDefined(game_id, "p2", "ships")):
+        if player_id == "p1":
+            result="1"
+    else:
+        if player_id != obj_irisdomestic.get(game_id, "lastplayer"):
+            result="1"
+
+    return result
+
+
+@app.route('/xplode/')
+def xplode():
+    opponent = {"p1": "p2", "p2": "p1"}
+    game_id = request.args.get('game_id')
+    player = request.args.get('player')
+    target = request.args.get('target')
+
+    ships = obj_irisdomestic.get(game_id, opponent[player], "ships")
+    if ships.find(target) > -1:
+        result = "hit"
+    else:
+        result = "miss"
+
+    obj_irisdomestic.set(player, game_id, "lastplayer")
+
+    return result
 
 
 app.run(host="0.0.0.0")

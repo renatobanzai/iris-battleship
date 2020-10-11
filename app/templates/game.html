@@ -11,6 +11,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <script id="editable">
+	var current_button;
 	var canvas_mine, stage_mine;
 	var canvas_enemy, stage_enemy;
 	var game_id = "{{game_id}}";
@@ -24,30 +25,131 @@
 	var arrangement = []
 	var ship_position = {}
 	var max_index = 0;
+	var canI = false;
 
 	function init() {
 		examples.showDistractor();
 		// create stage and point it to the canvas:
-		canvas_enemy = document.getElementById("enemy_canvas");
-		stage = new createjs.Stage(canvas_enemy);
+		canvas_enemy = document.getElementById("canvas_enemy");
+		stage_enemy = new createjs.Stage(canvas_enemy);
 
 		// enable touch interactions if supported on the current device:
-		createjs.Touch.enable(stage);
+		createjs.Touch.enable(stage_enemy);
 
 		// enabled mouse over / out events
-		stage.enableMouseOver(10);
-		stage.mouseMoveOutside = true; // keep tracking the mouse even when it leaves the canvas
+		stage_enemy.enableMouseOver(10);
+		stage_enemy.mouseMoveOutside = true; // keep tracking the mouse even when it leaves the canvas
+
+		var container_enemy = new createjs.Container();
+		container_enemy.name = "container_enemy";
+		stage_enemy.addChild(container_enemy);
+		// create the checkers
+		for(var i=0;i<11;i++)
+		{
+			console.log(i);
+			pos = i * square_size;
+
+			if(i > 0)
+			{
+				var textv = new createjs.Text(i, "30px Arial", "#ff7700");
+				stage_enemy.addChild(textv);
+				textv.y = pos + 10;
+				textv.x = 10;
+
+				var texth = new createjs.Text(String.fromCharCode(64+i), "30px Arial", "#ff7700");
+				stage_enemy.addChild(texth);
+				texth.x = pos + 10;
+				texth.y = 10;
 
 
+				var linev = new createjs.Shape();
+				stage_enemy.addChild(linev);
+				linev.graphics.setStrokeStyle(1);
+				linev.graphics.beginStroke("black");
+				linev.graphics.moveTo(pos,0);
+				linev.graphics.lineTo(pos,canvas_enemy.height);
+				linev.graphics.endStroke();
 
-		// load the source image:
-		var image = new Image();
-		image.src = "{{ url_for('static', filename='daisy.png') }}";
-		image.onload = handleImageLoad;
+				var lineh = new createjs.Shape();
+				stage_enemy.addChild(lineh);
+				lineh.graphics.setStrokeStyle(1);
+				lineh.graphics.beginStroke("black");
+				lineh.graphics.moveTo(0,pos);
+				lineh.graphics.lineTo(canvas_enemy.width, pos);
+				lineh.graphics.endStroke();
+
+				//creating each button
+
+				for(var j=0; j < 10;j++)
+				{
+					var btn = new createjs.Shape();
+					var length = square_size;
+
+					btn.graphics.beginFill("#FF0").drawRect(0, 0, square_size, square_size);
+					btn.name = String.fromCharCode(65+j)+i;
+					container_enemy.addChild(btn);
+
+					btn.x = (j+1) * square_size;
+					btn.y = (i) * square_size;
+					btn.regX = btn.width / 2;
+					btn.regY = btn.height / 2;
+
+					btn.on("click", function (evt)
+					{
+						current_button = this;
+						if(canI)
+						{
+						canI=false;
+						 $.get("/xplode", { player:player,game_id:game_id,target:this.name}).done(function(data)
+						 {
+            				if(data=="hit")
+            					color = "#FF0000";
+            				else
+            					color = "#CFCFCF";
+							current_button.graphics.clear().beginFill(color).drawRect(0, 0, square_size, square_size).endFill();
+
+							current_button.removeAllEventListeners();
+							stage_enemy.update();
+
+          				});
+						}
+						else
+						{
+							alert("wait your turn");
+						}
+					});
+
+					stage_enemy.update();
+				}
+			}
+		}
+		stage_enemy.update();
+		examples.hideDistractor();
+		createjs.Ticker.addEventListener("tick", tick);
 	}
 
 	function stop() {
 		createjs.Ticker.removeEventListener("tick", tick);
+	}
+
+	setInterval(canIPlay, 2000);
+
+	function canIPlay()
+	{
+		url = "/caniplay/?game_id="+game_id+"&player="+player;
+		$.get(url).done(function(data)
+		{
+			if(data=="1")
+			{
+				document.getElementById("warnings").innerHTML="Your turn!";
+				canI=true;
+			}
+			else
+			{
+				document.getElementById("warnings").innerHTML="Waiting your enemy...";
+				canI=false;
+			}
+		});
 	}
 
 	function handleImageLoad(event) {
@@ -158,7 +260,7 @@
 		// this set makes it so the stage only re-renders when an event handler indicates a change has happened.
 		if (update) {
 			update = false; // only update once
-			stage.update(event);
+			stage_enemy.update(event);
 		}
 	}
 </script>
@@ -173,9 +275,9 @@
 
 <div>
 	<h3>Enemy Waters</h3>
-	<canvas id="enemy" width="770" height="770"></canvas>
+	<canvas id="canvas_enemy" width="550" height="550"></canvas>
 	<h3>Home Waters</h3>
-	<canvas id="mine" width="770" height="770"></canvas>
+	<canvas id="canvas_mine" width="550" height="550"></canvas>
 </div>
 </body>
 </html>

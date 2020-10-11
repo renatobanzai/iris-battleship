@@ -1,0 +1,25 @@
+version: '3.6'
+services:
+  iris-battleship:
+    image: renatobanzai/iris-ml:bin
+    restart: always
+    hostname: iris-ml
+    ports:
+      - 9091:51773
+      - 9092:52773
+
+  iris-ml:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    hostname: python-iris-ml
+    restart: always
+    depends_on:
+      - iris-ml
+    links:
+      - iris-ml
+    ports:
+      - 8050:8050
+    environment:
+      WAIT_HOSTS: iris-ml:51773
+    command: predict.py
