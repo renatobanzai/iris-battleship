@@ -1,5 +1,5 @@
 iris:
-  host: localhost
+  host: iris-database
   port: 51773
   namespace: USER
   username: _SYSTEM

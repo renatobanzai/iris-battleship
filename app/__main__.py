@@ -22,7 +22,7 @@ def new():
 
     obj_irisdomestic.set(max, "maxgame")
 
-    return render_template('new.html', game_id=max)
+    return render_template('new.html', game_id=max, url=request.url_root)
 
 @app.route('/arrange/p1/')
 def arrangep1():
@@ -40,21 +40,25 @@ def save():
     player = request.args.get('player')
     ships = request.args.get('ships')
     obj_irisdomestic.set(ships, game_id, player, "ships")
-    return render_template('game.html', game_id=game_id, player=player)
+    return render_template('game.html', game_id=game_id, player=player, ships=ships)
 
 @app.route('/caniplay/')
 def CanIPlay():
-    result = "0"
+    result = "[0,'','']"
+
     game_id = request.args.get('game_id')
     player_id = request.args.get('player')
+    opponent = {"p1": "p2", "p2": "p1"}
     if(obj_irisdomestic.isDefined(game_id, "lastplayer")==False
             and obj_irisdomestic.isDefined(game_id, "p1", "ships")
             and obj_irisdomestic.isDefined(game_id, "p2", "ships")):
         if player_id == "p1":
-            result="1"
+            result="[1,'','']"
     else:
         if player_id != obj_irisdomestic.get(game_id, "lastplayer"):
-            result="1"
+            last_target = obj_irisdomestic.get(game_id,opponent[player_id],"lasttarget")
+            last_result = obj_irisdomestic.get(game_id,opponent[player_id],"lastresult")
+            result="[1,'"+ last_target +"','"+last_result+"']"
 
     return result
 
@@ -73,6 +77,8 @@ def xplode():
         result = "miss"
 
     obj_irisdomestic.set(player, game_id, "lastplayer")
+    obj_irisdomestic.set(target, game_id, player, "lasttarget")
+    obj_irisdomestic.set(result, game_id, player, "lastresult")
 
     return result
 

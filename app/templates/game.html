@@ -85,7 +85,7 @@
 					var btn = new createjs.Shape();
 					var length = square_size;
 
-					btn.graphics.beginFill("#FF0").drawRect(0, 0, square_size, square_size);
+					btn.graphics.beginFill("#FFF").drawRect(0, 0, square_size, square_size);
 					btn.name = String.fromCharCode(65+j)+i;
 					container_enemy.addChild(btn);
 
@@ -126,6 +126,81 @@
 		stage_enemy.update();
 		examples.hideDistractor();
 		createjs.Ticker.addEventListener("tick", tick);
+
+		init_home();
+	}
+
+	function init_home()
+	{
+		console.log("init home");
+		examples.showDistractor();
+		// create stage and point it to the canvas:
+		canvas_mine = document.getElementById("canvas_mine");
+		stage_mine = new createjs.Stage(canvas_mine);
+		var container_mine = new createjs.Container();
+		container_mine.name = "container_mine";
+		stage_mine.addChild(container_mine);
+		for(var i=0;i<11;i++)
+		{
+			pos = i * square_size;
+
+			if(i > 0)
+			{
+				var textv = new createjs.Text(i, "30px Arial", "#ff7700");
+				stage_mine.addChild(textv);
+				textv.y = pos + 10;
+				textv.x = 10;
+
+				var texth = new createjs.Text(String.fromCharCode(64+i), "30px Arial", "#ff7700");
+				stage_mine.addChild(texth);
+				texth.x = pos + 10;
+				texth.y = 10;
+
+
+				var linev = new createjs.Shape();
+				stage_mine.addChild(linev);
+				linev.graphics.setStrokeStyle(1);
+				linev.graphics.beginStroke("black");
+				linev.graphics.moveTo(pos,0);
+				linev.graphics.lineTo(pos,canvas_mine.height);
+				linev.graphics.endStroke();
+
+				var lineh = new createjs.Shape();
+				stage_mine.addChild(lineh);
+				lineh.graphics.setStrokeStyle(1);
+				lineh.graphics.beginStroke("black");
+				lineh.graphics.moveTo(0,pos);
+				lineh.graphics.lineTo(canvas_mine.width, pos);
+				lineh.graphics.endStroke();
+
+				//creating each square
+
+				for(var j=0; j < 10;j++)
+				{
+					var btn = new createjs.Shape();
+					var length = square_size;
+
+					btn.graphics.beginFill("#FFF").drawRect(0, 0, square_size, square_size);
+					btn.name = String.fromCharCode(65+j)+i;
+					container_mine.addChild(btn);
+
+					btn.x = (j+1) * square_size;
+					btn.y = (i) * square_size;
+					btn.regX = btn.width / 2;
+					btn.regY = btn.height / 2;
+				}
+			}
+		}
+		ships = "{{ships}}";
+		vec_ships = ships.split(",");
+		for(i=0;i<vec_ships.length;i++)
+		{
+			sh = stage_mine.getChildByName("container_mine").getChildByName(vec_ships[i]).graphics;
+			sh.clear();
+			sh.beginFill("blue").drawRect(0, 0, square_size, square_size).endFill();
+		}
+		stage_mine.update();
+		examples.hideDistractor();
 	}
 
 	function stop() {
@@ -139,9 +214,23 @@
 		url = "/caniplay/?game_id="+game_id+"&player="+player;
 		$.get(url).done(function(data)
 		{
-			if(data=="1")
+			result = eval(data);
+			if(result[0]=="1")
 			{
 				document.getElementById("warnings").innerHTML="Your turn!";
+				canI=true;
+				if(result[2]=="hit")
+					color = "#FF0000";
+				if(result[2]=="miss")
+					color = "#CFCFCF";
+
+				if(result[1]!="")
+				{
+					sh = stage_mine.getChildByName("container_mine").getChildByName(result[1]).graphics;
+					sh.clear();
+					sh.beginFill(color).drawRect(0, 0, square_size, square_size).endFill();
+					stage_mine.update();
+				}
 				canI=true;
 			}
 			else
@@ -150,110 +239,6 @@
 				canI=false;
 			}
 		});
-	}
-
-	function handleImageLoad(event) {
-		var image = event.target;
-		var bitmap;
-		var rect;
-		var container = new createjs.Container();
-		container.name = "cnt";
-		// create the checkers
-		for(var i=0;i<11;i++)
-		{
-			console.log(i);
-			pos = i * square_size;
-
-			if(i > 0)
-			{
-				var textv = new createjs.Text(i, "40px Arial", "#ff7700");
-				stage.addChild(textv);
-				textv.y = pos + 10;
-				textv.x = 10;
-
-				var texth = new createjs.Text(String.fromCharCode(64+i), "40px Arial", "#ff7700");
-				stage.addChild(texth);
-				texth.x = pos + 10;
-				texth.y = 10;
-			}
-
-			stage.update();
-			var linev = new createjs.Shape();
-			stage.addChild(linev);
-			linev.graphics.setStrokeStyle(1);
-			linev.graphics.beginStroke("black");
-			linev.graphics.moveTo(pos,0);
-			linev.graphics.lineTo(pos,canvas_enemy.height);
-			linev.graphics.endStroke();
-
-			var lineh = new createjs.Shape();
-			stage.addChild(lineh);
-			lineh.graphics.setStrokeStyle(1);
-			lineh.graphics.beginStroke("black");
-			lineh.graphics.moveTo(0,pos);
-			lineh.graphics.lineTo(canvas_enemy.width, pos);
-			lineh.graphics.endStroke();
-		}
-		stage.update();
-
-		stage.addChild(container);
-
-		ships.push({name:"ship_0",size:5});
-		ships.push({name:"ship_1",size:3});
-		ships.push({name:"ship_2",size:3});
-		ships.push({name:"ship_3",size:2});
-		ships.push({name:"ship_4",size:2});
-
-		// create and populate the screen with ships:
-		for (var i = 0; i < ships.length; i++) {
-			var ship = new createjs.Shape();
-			var length = ships[i].size * square_size
-
-			ship.graphics.setStrokeStyle(2).beginStroke("black").beginFill("#F00").drawRect(0, 0, length, square_size).beginFill("#FFF");
-			ship.name = "ship_" + i;
-			container.addChild(ship);
-
-			ship.x = (i+1) * square_size;
-			ship.y = (i+1) * square_size;
-			ship.regX = ship.width / 2;
-			ship.regY = ship.height / 2;
-
-
-
-			ship.cursor = "pointer";
-
-			// using "on" binds the listener to the scope of the currentTarget by default
-			// in this case that means it executes in the scope of the button.
-			ship.on("mousedown", function (evt) {
-				this.parent.addChild(this);
-				this.offset = {x: this.x - evt.stageX, y: this.y - evt.stageY};
-			});
-
-			// the pressmove event is dispatched when the mouse moves after a mousedown on the target until the mouse is released.
-			ship.on("pressmove", function (evt) {
-				x = evt.stageX + this.offset.x;
-				y = evt.stageY + this.offset.y;
-
-				_x = Math.round(x / square_size)
-				_y = Math.round(y / square_size)
-
-				this.x = _x * square_size;
-				this.y = _y * square_size;
-
-				console.log(this.name)
-				// indicate that the stage should be updated on the next tick:
-				update = true;
-			});
-			ship.on("dblclick", function (evt) {
-				alert("to do: change orientation");
-				// indicate that the stage should be updated on the next tick:
-				update = true;
-			});
-
-		}
-
-		examples.hideDistractor();
-		createjs.Ticker.addEventListener("tick", tick);
 	}
 
 	function tick(event) {
@@ -274,9 +259,9 @@
 </header>
 
 <div>
-	<h3>Enemy Waters</h3>
+	<h3>Find the Enemy Ships!</h3>
 	<canvas id="canvas_enemy" width="550" height="550"></canvas>
-	<h3>Home Waters</h3>
+	<h3>Watch your ships</h3>
 	<canvas id="canvas_mine" width="550" height="550"></canvas>
 </div>
 </body>
