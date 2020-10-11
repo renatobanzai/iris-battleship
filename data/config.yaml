@@ -1,0 +1,6 @@
+iris:
+  host: localhost
+  port: 51773
+  namespace: USER
+  username: _SYSTEM
+  password: SYS

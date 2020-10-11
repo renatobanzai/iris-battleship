@@ -1,0 +1,3 @@
+PyYAML==5.3.1
+Flask==1.1.2
+./nativeAPI_wheel/irisnative-1.0.0-cp34-abi3-linux_x86_64.whl
